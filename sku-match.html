@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKU Extractor</title>
+<link rel="stylesheet" href="sku-match.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>SKU Extractor</h1>
+    <p>Extract SKU IDs in the format <code>08002P040210029174</code> from a PDF.</p>
+  </header>
+
+  <div class="panel">
+    <h2>Document</h2>
+    <div id="dropzone">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="label">Drop a PDF here, or click to choose one</p>
+      <p class="hint">The current PDF is saved in this browser until you upload a replacement.</p>
+      <input type="file" id="fileInput" accept="application/pdf" style="display:none">
+    </div>
+
+    <div class="file-bar" id="fileBar">
+      <div><span class="fname" id="fname"></span><span class="count" id="pageCount"></span></div>
+      <button id="changeFile">Change file</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Extracted SKU IDs</h2>
+    <div class="sub" id="foundSub">Upload a PDF to extract SKU IDs.</div>
+    <div class="sku-list" id="foundList">
+      <div class="placeholder">Nothing extracted yet.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Compare</h2>
+    <div class="sub">Paste SKU IDs one per line, or separated by commas or spaces.</div>
+    <textarea id="skuInput" placeholder="e.g.&#10;08002P040210029174"></textarea>
+    <div class="actions">
+      <button class="primary" id="compareBtn" disabled>Compare</button>
+      <span class="note" id="compareNote">Upload a PDF first</span>
+    </div>
+  </div>
+
+  <div class="panel" id="results">
+    <h2>Comparison results</h2>
+    <div class="summary">
+      <div class="stat match"><b id="matchCount">0</b>found</div>
+      <div class="stat miss"><b id="missCount">0</b>not found</div>
+      <div class="stat"><b id="checkedCount">0</b>checked</div>
+    </div>
+    <div id="resultList"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="sku-match.js"></script>
+</body>
+</html>

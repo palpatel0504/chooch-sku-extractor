@@ -1,0 +1,60 @@
+:root {
+  --bg: #12151b;
+  --surface: #1a1f28;
+  --surface-2: #222835;
+  --border: #2c3340;
+  --text: #edeff2;
+  --text-muted: #8993a4;
+  --accent: #e3a548;
+  --accent-soft: #3a3324;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+.wrap { max-width: 800px; margin: 0 auto; padding: 36px 24px 64px; }
+header.top { margin-bottom: 28px; }
+header.top h1 { margin: 0 0 6px; font-size: 28px; font-weight: 650; letter-spacing: -.01em; }
+header.top p, .sub { margin: 0; color: var(--text-muted); font-size: 14px; }
+code { color: var(--accent); }
+.panel { margin-bottom: 20px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.panel h2 { margin: 0 0 12px; font-size: 14.5px; font-weight: 600; }
+.panel .sub { margin: -6px 0 14px; font-size: 13px; }
+
+#dropzone { padding: 36px 20px; border: 1.5px dashed var(--border); border-radius: 10px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+#dropzone:hover, #dropzone.drag { border-color: var(--accent); background: var(--accent-soft); }
+#dropzone .icon { width: 34px; height: 34px; margin: 0 auto 12px; stroke: var(--text-muted); }
+#dropzone p { margin: 0; }
+#dropzone p.label { font-size: 15px; font-weight: 550; }
+#dropzone p.hint { margin-top: 4px; color: var(--text-muted); font-size: 13px; }
+
+.file-bar { display: none; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; }
+.file-bar.show { display: flex; }
+.file-bar .fname { font-weight: 550; overflow-wrap: anywhere; }
+.file-bar .count { margin-left: 8px; color: var(--text-muted); white-space: nowrap; }
+.file-bar button { padding: 0; background: none; border: 0; color: var(--accent); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+
+.sku-list { min-height: 220px; max-height: 480px; overflow-y: auto; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.sku-list .row { padding: 5px 4px; border-bottom: 1px solid var(--border); }
+.sku-list .row:last-child { border-bottom: 0; }
+.sku-list .empty, .sku-list .placeholder { padding: 8px 4px; color: var(--text-muted); font-family: Inter, sans-serif; font-size: 13px; }
+
+textarea { width: 100%; height: 180px; resize: vertical; padding: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: 13px "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; outline: 0; }
+textarea:focus { border-color: var(--accent); }
+textarea::placeholder { color: var(--text-muted); font-family: Inter, sans-serif; }
+.actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+button.primary { padding: 10px 20px; background: var(--accent); border: 0; border-radius: 7px; color: #1a1408; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+button.primary:disabled { background: var(--surface-2); color: var(--text-muted); cursor: not-allowed; }
+.note { color: var(--text-muted); font-size: 12.5px; }
+#results { display: none; }
+#results.show { display: block; }
+.summary { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
+.stat { color: var(--text-muted); font-size: 13.5px; }
+.stat b { display: block; color: var(--text); font-size: 20px; font-weight: 650; }
+.stat.match b { color: #6fcf97; }
+.stat.miss b { color: #e3796b; }
+.result-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; padding: 9px 12px; border-radius: 7px; font: 13.5px "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+.result-row.matched { background: #1e2e27; border: 1px solid #2c4a3c; }
+.result-row.missed { background: #2e2020; border: 1px solid #4a2e2c; }
+.tag { padding: 2px 8px; border-radius: 20px; font-family: Inter, sans-serif; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.matched .tag { background: #2c4a3c; color: #6fcf97; }
+.missed .tag { background: #4a2e2c; color: #e3796b; }
