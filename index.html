@@ -15,12 +15,23 @@
   </header>
 
   <div class="panel">
-    <h2>Document</h2>
-    <div id="dropzone">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      <p class="label">Drop a PDF here, or click to choose one</p>
-      <p class="hint">The current PDF is saved in this browser until you upload a replacement.</p>
-      <input type="file" id="fileInput" accept="application/pdf" style="display:none">
+    <h2>Extracted SKU source</h2>
+    <div class="source-options">
+      <div class="source-option">
+        <h3>Upload document</h3>
+        <div id="dropzone">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <p class="label">Drop a PDF here, or click to choose one</p>
+          <p class="hint">The current PDF is saved until you upload a replacement.</p>
+          <input type="file" id="fileInput" accept="application/pdf" style="display:none">
+        </div>
+      </div>
+      <div class="source-option">
+        <h3>Paste copied SKU IDs</h3>
+        <textarea id="extractedSkuInput" class="source-textarea" placeholder="Paste extracted SKU IDs here&#10;e.g. 08002P040210029174"></textarea>
+        <button class="secondary use-pasted-btn" id="usePastedSkusBtn" type="button">Use pasted SKU IDs</button>
+        <div class="sync-note" id="pastedSkuNote"></div>
+      </div>
     </div>
 
     <div class="file-bar" id="fileBar">
@@ -39,12 +50,15 @@
 
   <div class="panel">
     <h2>Compare</h2>
-    <div class="sub">Paste SKU IDs one per line, or separated by commas or spaces.</div>
-    <textarea id="skuInput" placeholder="e.g.&#10;08002P040210029174"></textarea>
+    <div class="sub">Paste full SKU IDs or prefixes, or upload a PDF, TXT, or CSV document containing them.</div>
+    <textarea id="skuInput" placeholder="e.g.&#10;08002P040210029174&#10;02056P0324"></textarea>
     <div class="actions">
+      <input type="file" id="compareFileInput" accept="application/pdf,.pdf,text/plain,.txt,text/csv,.csv" hidden>
+      <button class="secondary" id="uploadCompareFileBtn" type="button">Upload comparison document</button>
       <button class="primary" id="compareBtn" disabled>Compare</button>
       <span class="note" id="compareNote">Upload a PDF first</span>
     </div>
+    <div class="sync-note" id="compareFileNote"></div>
   </div>
 
   <div class="panel" id="results">

@@ -17,12 +17,20 @@ const resultList = document.getElementById('resultList');
 const matchCountEl = document.getElementById('matchCount');
 const missCountEl = document.getElementById('missCount');
 const checkedCountEl = document.getElementById('checkedCount');
+const extractedSkuInput = document.getElementById('extractedSkuInput');
+const usePastedSkusBtn = document.getElementById('usePastedSkusBtn');
+const pastedSkuNote = document.getElementById('pastedSkuNote');
+const compareFileInput = document.getElementById('compareFileInput');
+const uploadCompareFileBtn = document.getElementById('uploadCompareFileBtn');
+const compareFileNote = document.getElementById('compareFileNote');
 
 const DB_NAME = 'sku-extractor';
 const STORE_NAME = 'documents';
 const ACTIVE_DOCUMENT_KEY = 'active-pdf';
 // Matches IDs such as 08002P040210029174: five digits, P, then twelve digits.
 const SKU_PATTERN = /\b\d{5}P\d{12}\b/gi;
+// Allows a SKU prefix such as 02056P0324 in the Compare field.
+const SKU_PREFIX_PATTERN = /\b\d{5}P\d+\b/gi;
 let extractedSkus = [];
 
 dropzone.addEventListener('click', () => fileInput.click());
@@ -40,6 +48,14 @@ fileInput.addEventListener('change', event => {
 changeFileBtn.addEventListener('click', event => {
   event.stopPropagation();
   fileInput.click();
+});
+usePastedSkusBtn.addEventListener('click', usePastedSkus);
+uploadCompareFileBtn.addEventListener('click', () => compareFileInput.click());
+compareFileInput.addEventListener('change', async event => {
+  const [file] = event.target.files;
+  event.target.value = '';
+  if (!file) return;
+  await loadComparisonDocument(file);
 });
 
 async function handleFile(file) {
@@ -85,33 +101,102 @@ function setLoading(name) {
 function showDocument(document) {
   extractedSkus = document.skus;
   fname.textContent = document.name;
-  pageCountEl.textContent = `· ${document.pageCount} page${document.pageCount === 1 ? '' : 's'}`;
+  pageCountEl.textContent = document.pageCount
+    ? `· ${document.pageCount} page${document.pageCount === 1 ? '' : 's'}`
+    : '· Pasted SKU IDs';
   fileBar.classList.add('show');
   renderFoundList();
   compareBtn.disabled = false;
   compareNote.textContent = 'Ready to compare';
 }
 
-compareBtn.addEventListener('click', () => {
-  const inputSkus = [...new Set(
-    skuInput.value.toUpperCase().match(SKU_PATTERN) || []
-  )];
-
-  if (inputSkus.length === 0) {
-    compareNote.textContent = 'Paste at least one valid SKU ID to compare';
+async function usePastedSkus() {
+  const skus = [...new Set(extractedSkuInput.value.toUpperCase().match(SKU_PATTERN) || [])].sort();
+  if (skus.length === 0) {
+    pastedSkuNote.textContent = 'Paste at least one full SKU ID, such as 08002P040210029174.';
     return;
   }
 
-  const extractedSet = new Set(extractedSkus);
-  const rows = inputSkus.map(sku => ({ sku, isMatch: extractedSet.has(sku) }));
-  const matchCount = rows.filter(row => row.isMatch).length;
+  const document = { name: 'Pasted SKU IDs', pageCount: 0, skus };
+  try {
+    await saveActiveDocument(document);
+    pastedSkuNote.textContent = `${skus.length} unique SKU ID${skus.length === 1 ? '' : 's'} loaded and saved.`;
+  } catch (error) {
+    console.error(error);
+    pastedSkuNote.textContent = `${skus.length} unique SKU IDs loaded for this session.`;
+  }
+  showDocument(document);
+}
 
-  matchCountEl.textContent = matchCount;
-  missCountEl.textContent = rows.length - matchCount;
-  checkedCountEl.textContent = rows.length;
+async function loadComparisonDocument(file) {
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  const isText = file.type.startsWith('text/') || /\.(txt|csv)$/i.test(file.name);
+  if (!isPdf && !isText) {
+    compareFileNote.textContent = 'Please choose a PDF, TXT, or CSV document.';
+    return;
+  }
+
+  uploadCompareFileBtn.disabled = true;
+  compareFileNote.textContent = `Reading ${file.name}…`;
+  try {
+    let documentText;
+    if (isPdf) {
+      documentText = await extractTextFromPdf(await file.arrayBuffer());
+    } else {
+      documentText = await file.text();
+    }
+
+    const values = [...new Set(documentText.toUpperCase().match(SKU_PREFIX_PATTERN) || [])];
+    if (values.length === 0) {
+      compareFileNote.textContent = `No SKU IDs or prefixes found in ${file.name}.`;
+      return;
+    }
+    skuInput.value = values.join('\n');
+    compareFileNote.textContent = `${values.length} SKU ID${values.length === 1 ? '' : 's'} or prefix${values.length === 1 ? '' : 'es'} loaded from ${file.name}.`;
+  } catch (error) {
+    console.error(error);
+    compareFileNote.textContent = `Could not read ${file.name}.`;
+  } finally {
+    uploadCompareFileBtn.disabled = false;
+  }
+}
+
+async function extractTextFromPdf(data) {
+  const pdf = await pdfjsLib.getDocument({ data: data.slice(0) }).promise;
+  const pages = [];
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const textContent = await page.getTextContent();
+    pages.push(textContent.items.map(item => item.str).join(' '));
+  }
+  return pages.join('\n');
+}
+
+compareBtn.addEventListener('click', () => {
+  const inputSkus = [...new Set(skuInput.value.toUpperCase().match(SKU_PREFIX_PATTERN) || [])];
+
+  if (inputSkus.length === 0) {
+    compareNote.textContent = 'Paste at least one SKU ID or SKU prefix to compare';
+    return;
+  }
+
+  const matchedSkus = new Set();
+  const missingQueries = [];
+  inputSkus.forEach(query => {
+    const matches = extractedSkus.filter(sku => sku.startsWith(query));
+    if (matches.length === 0) missingQueries.push(query);
+    matches.forEach(sku => matchedSkus.add(sku));
+  });
+  const rows = [
+    ...[...matchedSkus].sort().map(sku => ({ sku, isMatch: true })),
+    ...missingQueries.map(sku => ({ sku, isMatch: false }))
+  ];
+
+  matchCountEl.textContent = matchedSkus.size;
+  missCountEl.textContent = missingQueries.length;
+  checkedCountEl.textContent = inputSkus.length;
   resultList.innerHTML = rows
-    .sort((a, b) => Number(b.isMatch) - Number(a.isMatch))
-    .map(row => `<div class="result-row ${row.isMatch ? 'matched' : 'missed'}"><span>${escapeHtml(row.sku)}</span><span class="tag">${row.isMatch ? 'found in document' : 'not found'}</span></div>`)
+    .map(row => `<div class="result-row ${row.isMatch ? 'matched' : 'missed'}"><span>${escapeHtml(row.sku)}</span><span class="tag">${row.isMatch ? 'found' : 'no match'}</span></div>`)
     .join('');
   resultsPanel.classList.add('show');
   resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
